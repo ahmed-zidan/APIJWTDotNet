@@ -32,5 +32,22 @@ namespace APIJWTDotNet.Controllers
             }
             return Ok(res);
         }
+
+        [HttpPost("GetToken")]
+        public async Task<IActionResult> GetToken([FromBody] TokenRequestModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var res = await _uof.auth.GetTokenAsync(model);
+            if (!res.IsAuthenticated)
+            {
+                return BadRequest(res);
+            }
+
+            return Ok(res);
+        }
+
     }
 }

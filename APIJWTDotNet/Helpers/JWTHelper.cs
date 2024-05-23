@@ -10,6 +10,6 @@ namespace APIJWTDotNet.Helpers
         public string Key { get; set; }
         public string Issuer { get; set; }
         public string Audience { get; set; }
-        public int Expiered { get; set; }
+        public int Expired { get; set; }
     }
 }

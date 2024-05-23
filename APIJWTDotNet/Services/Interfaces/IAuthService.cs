@@ -9,5 +9,6 @@ namespace APIJWTDotNet.Services.Interfaces
     public interface IAuthService
     {
         Task<AuthModel> RegisterAsync(RegisterModel register);
+        Task<AuthModel> GetTokenAsync(TokenRequestModel model);
     }
 }

@@ -25,6 +25,32 @@ namespace APIJWTDotNet.Services.Imp
             _jwt = jwt.Value;
 
         }
+
+        public async Task<AuthModel> GetTokenAsync(TokenRequestModel model)
+        {
+            var authModel = new AuthModel();
+            var user = await _manager.FindByEmailAsync(model.Email);
+            if (user is null || !(await _manager.CheckPasswordAsync(user, model.Password)))
+            {
+                authModel.Message = "Email or password is incorrect";
+                return authModel;
+            }
+            var token = await GenerateTokenAsync(user);
+            authModel.IsAuthenticated = true;
+            authModel.Exipred = token.ValidTo;
+            authModel.Token = new JwtSecurityTokenHandler().WriteToken(token);
+            authModel.Username = user.UserName;
+            authModel.Email = user.Email;
+            var roles = await _manager.GetRolesAsync(user);
+            authModel.Roles = new List<string>();
+            foreach(var role in roles)
+            {
+                authModel.Roles.Add(role);
+            }
+
+            return authModel;
+        }
+
         public async Task<AuthModel> RegisterAsync(RegisterModel register)
         {
             if(await _manager.FindByEmailAsync(register.Email) is not null)
@@ -40,9 +66,11 @@ namespace APIJWTDotNet.Services.Imp
                 UserName = register.Username,
                 FirstName = register.FirstName,
                 LastName = register.LastName,
-                Email = register.Email
+                Email = register.Email,
+                
+                
             };
-            var res = await _manager.CreateAsync(user);
+            var res = await _manager.CreateAsync(user,register.Password);
             if (!res.Succeeded)
             {
                 string errors = string.Empty;
@@ -96,7 +124,7 @@ namespace APIJWTDotNet.Services.Imp
                 issuer :_jwt.Issuer,
                 audience: _jwt.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddDays(_jwt.Expiered),
+                expires: DateTime.Now.AddDays(_jwt.Expired),
                 signingCredentials: signingCredintiels
 
 
